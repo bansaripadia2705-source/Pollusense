@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Industrial Pollution Monitoring — Golden Corridor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="static/css/style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-logo">
+        <div class="logo-icon">🏭</div>
+        <div>
+          <div class="logo-title">POLLUSENSE</div>
+          <div class="logo-title">Smart Industrial Pollution Monitor</div>
+          <div class="logo-sub">Golden Corridor — Vapi · Ankleshwar · Vatva</div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="live-badge">
+          <span class="pulse"></span>
+          <span id="live-label">LIVE MONITORING</span>
+        </div>
+        <div class="header-time" id="header-time">--:--:--</div>
+
+        <!-- Language Selector -->
+        <div class="lang-selector">
+          <span class="lang-icon">🌐</span>
+          <select id="global-language" onchange="setLanguage(this.value)" title="Select Language">
+            <option value="english">English</option>
+            <option value="hindi">हिंदी</option>
+            <option value="gujarati">ગુજરાતી</option>
+          </select>
+        </div>
+
+        <!-- Dark / Light Mode Toggle -->
+        <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">
+          <span id="theme-icon">🌙</span>
+          <div class="theme-toggle-track"><div class="theme-toggle-thumb"></div></div>
+          <span id="theme-label">Dark</span>
+        </button>
+
+        <div class="ibm-badge">Powered by IBM Granite LLM</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav Tabs -->
+  <nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('air')">💨 Air Quality</button>
+    <button class="tab-btn" onclick="switchTab('water')">💧 Water Quality</button>
+    <button class="tab-btn" onclick="switchTab('alerts')">🚨 Alerts</button>
+    <button class="tab-btn" onclick="switchTab('ai')">🤖 AI Analysis</button>
+    <button class="tab-btn" onclick="switchTab('agents')">🧠 AI Agents</button>
+    <button class="tab-btn" onclick="switchTab('env-dashboard')">🌍 Env Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('assistant')">💬 AI Assistant</button>
+    <button class="tab-btn" onclick="switchTab('architecture')">🏗️ Architecture</button>
+  </nav>
+
+  <!-- Tab Content -->
+  <main class="main-content">
+
+    <!-- ── DASHBOARD TAB ── -->
+    <section id="tab-dashboard" class="tab-section active">
+      <!-- Location Cards -->
+      <div class="section-title">📍 Real-Time IoT Sensor Overview</div>
+      <div class="location-grid" id="location-cards"></div>
+
+      <!-- Charts Row -->
+      <div class="section-title" style="margin-top:2rem">📈 Live Parameter Trends (Last 20 Readings)</div>
+      <div class="location-selector">
+        <label>Select Location:</label>
+        <select id="trend-location" onchange="loadTrends()">
+          <option value="Vapi">Vapi</option>
+          <option value="Ankleshwar">Ankleshwar</option>
+          <option value="Vatva">Vatva</option>
+        </select>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Air Quality Parameters</div>
+          <canvas id="air-trend-chart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Water Quality Parameters</div>
+          <canvas id="water-trend-chart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">AQI vs WQI Comparison</div>
+          <canvas id="aqi-wqi-chart" height="180"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Pollution Status Distribution</div>
+          <canvas id="status-pie-chart" height="180"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AIR QUALITY TAB ── -->
+    <section id="tab-air" class="tab-section">
+      <div class="section-title">💨 Air Quality Monitoring — Detailed View</div>
+      <div class="location-selector">
+        <label>Location:</label>
+        <select id="air-location" onchange="loadAirDetail()">
+          <option value="Vapi">Vapi</option>
+          <option value="Ankleshwar">Ankleshwar</option>
+          <option value="Vatva">Vatva</option>
+        </select>
+      </div>
+      <div class="params-grid" id="air-params-grid"></div>
+      <div class="section-title" style="margin-top:1.5rem">📊 Air Parameters — Bar Chart</div>
+      <div class="chart-card" style="max-width:900px;margin:0 auto">
+        <canvas id="air-bar-chart" height="120"></canvas>
+      </div>
+    </section>
+
+    <!-- ── WATER QUALITY TAB ── -->
+    <section id="tab-water" class="tab-section">
+      <div class="section-title">💧 Water Quality Monitoring — Detailed View</div>
+      <div class="location-selector">
+        <label>Location:</label>
+        <select id="water-location" onchange="loadWaterDetail()">
+          <option value="Vapi">Vapi</option>
+          <option value="Ankleshwar">Ankleshwar</option>
+          <option value="Vatva">Vatva</option>
+        </select>
+      </div>
+      <div class="params-grid" id="water-params-grid"></div>
+      <div class="section-title" style="margin-top:1.5rem">📊 Water Parameters — Bar Chart</div>
+      <div class="chart-card" style="max-width:900px;margin:0 auto">
+        <canvas id="water-bar-chart" height="120"></canvas>
+      </div>
+    </section>
+
+    <!-- ── ALERTS TAB ── -->
+    <section id="tab-alerts" class="tab-section">
+      <div class="section-title">🚨 Active Pollution Alerts</div>
+      <div class="alerts-toolbar">
+        <button class="btn btn-refresh" onclick="loadAlerts()">🔄 Refresh Alerts</button>
+        <span class="alert-count" id="alert-count-badge">0 Active</span>
+      </div>
+      <div id="alerts-container"></div>
+    </section>
+
+    <!-- ── AI ANALYSIS TAB ── -->
+    <section id="tab-ai" class="tab-section">
+      <div class="section-title">🤖 IBM Granite LLM — AI Pollution Analysis</div>
+      <div class="ai-panel">
+        <div class="ai-controls">
+          <div class="form-group">
+            <label>Select Location for Analysis</label>
+            <select id="ai-location">
+              <option value="Vapi">Vapi</option>
+              <option value="Ankleshwar">Ankleshwar</option>
+              <option value="Vatva">Vatva</option>
+            </select>
+          </div>
+          <button class="btn btn-ai" onclick="runAIAnalysis()">
+            <span id="ai-btn-text">🔍 Analyze with IBM Granite LLM</span>
+          </button>
+        </div>
+
+        <div class="agents-row">
+          <div class="agent-card">
+            <div class="agent-icon">📡</div>
+            <div class="agent-name">Emission &amp; Effluent<br/>Monitoring Agent</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">⚖️</div>
+            <div class="agent-name">Violation Detection<br/>&amp; Compliance Agent</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">📢</div>
+            <div class="agent-name">Regulatory Alert<br/>&amp; Escalation Agent</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">🏥</div>
+            <div class="agent-name">Public Health Risk<br/>Assessment Agent</div>
+          </div>
+          <div class="agent-card">
+            <div class="agent-icon">📊</div>
+            <div class="agent-name">Industrial Pollution<br/>Dashboard Agent</div>
+          </div>
+        </div>
+
+        <div id="ai-result-panel" class="ai-result-panel hidden">
+          <div class="ai-result-header">
+            <span id="ai-result-location"></span>
+            <span class="ai-status-badge" id="ai-status-badge"></span>
+          </div>
+          <div class="ai-metrics-row" id="ai-metrics-row"></div>
+          <div class="ai-response-box">
+            <div class="ai-response-label">🤖 IBM Granite LLM Response</div>
+            <div id="ai-response-text"></div>
+          </div>
+          <div class="violations-list" id="violations-list"></div>
+        </div>
+
+        <!-- Remedies Section -->
+        <div class="section-title" style="margin-top:2rem">💊 Remediation Guidance</div>
+        <div class="remedies-grid" id="remedies-grid">
+          <div class="remedy-card good">
+            <div class="remedy-icon">✅</div>
+            <div class="remedy-title">When Status is GOOD</div>
+            <ul>
+              <li>Continue regular ETP (Effluent Treatment Plant) operations</li>
+              <li>Maintain green buffer zones around industrial areas</li>
+              <li>Conduct monthly calibration of all IoT sensors</li>
+              <li>Submit compliance reports to GPCB proactively</li>
+              <li>Train workers on environmental best practices</li>
+              <li>Document pollution levels for historical analysis</li>
+            </ul>
+          </div>
+          <div class="remedy-card moderate">
+            <div class="remedy-icon">⚠️</div>
+            <div class="remedy-title">When Status is MODERATE</div>
+            <ul>
+              <li>Increase monitoring frequency to every 5 minutes</li>
+              <li>Inspect and optimize industrial scrubbers</li>
+              <li>Reduce load on high-emission production lines</li>
+              <li>Alert shift supervisors for immediate review</li>
+              <li>Check ETP for efficiency — replace filter media if needed</li>
+              <li>Issue precautionary advisory to nearby communities</li>
+            </ul>
+          </div>
+          <div class="remedy-card bad">
+            <div class="remedy-icon">🚨</div>
+            <div class="remedy-title">When Status is BAD / Critical</div>
+            <ul>
+              <li>Immediately halt or reduce production at affected units</li>
+              <li>Notify GPCB (Gujarat Pollution Control Board) within 1 hour</li>
+              <li>Activate emergency ventilation and containment systems</li>
+              <li>Evacuate personnel from high-risk zones</li>
+              <li>Issue public health warning for nearby communities</li>
+              <li>Deploy rapid response team for source identification</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ARCHITECTURE TAB ── -->
+
+    <!-- ── AI AGENTS TAB ── -->
+    <section id="tab-agents" class="tab-section">
+      <div class="section-title">🧠 Advanced AI Agents — IBM Granite LLM</div>
+
+      <!-- Location Selector (shared) -->
+      <div class="location-selector" style="margin-bottom:1.5rem">
+        <label>Select Location:</label>
+        <select id="agents-location">
+          <option value="Vapi">Vapi</option>
+          <option value="Ankleshwar">Ankleshwar</option>
+          <option value="Vatva">Vatva</option>
+        </select>
+      </div>
+
+      <!-- Agent Cards Grid -->
+      <div class="agent-cards-grid">
+
+        <!-- 1. Pollution Prediction -->
+        <div class="ag-card" id="ag-prediction">
+          <div class="ag-header">
+            <span class="ag-icon">🔮</span>
+            <div>
+              <div class="ag-title">Pollution Prediction Agent</div>
+              <div class="ag-subtitle">Forecasts pollution levels for the next 1–6 hours using trend analysis</div>
+            </div>
+          </div>
+          <div class="ag-controls">
+            <label>Forecast Horizon</label>
+            <select id="pred-horizon">
+              <option value="1">1 Hour</option>
+              <option value="3" selected>3 Hours</option>
+              <option value="6">6 Hours</option>
+            </select>
+            <button class="btn-agent" onclick="runAgent('prediction')">Run Prediction</button>
+          </div>
+          <div class="ag-result hidden" id="result-prediction"></div>
+        </div>
+
+        <!-- 2. Public Health Risk -->
+        <div class="ag-card" id="ag-health-risk">
+          <div class="ag-header">
+            <span class="ag-icon">🏥</span>
+            <div>
+              <div class="ag-title">Public Health Risk Assessment Agent</div>
+              <div class="ag-subtitle">Evaluates health impact on nearby communities using population exposure models</div>
+            </div>
+          </div>
+          <div class="ag-controls">
+            <button class="btn-agent" onclick="runAgent('health-risk')">Assess Health Risk</button>
+          </div>
+          <div class="ag-result hidden" id="result-health-risk"></div>
+        </div>
+
+        <!-- 3. Source Identification -->
+        <div class="ag-card" id="ag-source-identification">
+          <div class="ag-header">
+            <span class="ag-icon">🔍</span>
+            <div>
+              <div class="ag-title">Pollution Source Identification Agent</div>
+              <div class="ag-subtitle">Identifies which industrial units are likely responsible for violations</div>
+            </div>
+          </div>
+          <div class="ag-controls">
+            <button class="btn-agent" onclick="runAgent('source-identification')">Identify Sources</button>
+          </div>
+          <div class="ag-result hidden" id="result-source-identification"></div>
+        </div>
+
+        <!-- 4. Anomaly Detection -->
+        <div class="ag-card" id="ag-anomaly-detection">
+          <div class="ag-header">
+            <span class="ag-icon">📈</span>
+            <div>
+              <div class="ag-title">Anomaly Detection Agent</div>
+              <div class="ag-subtitle">Detects statistical anomalies (spikes, sudden drops) using z-score analysis</div>
+            </div>
+          </div>
+          <div class="ag-controls">
+            <button class="btn-agent" onclick="runAgent('anomaly-detection')">Detect Anomalies</button>
+          </div>
+          <div class="ag-result hidden" id="result-anomaly-detection"></div>
+        </div>
+
+        <!-- 5. Citizen Complaints -->
+        <div class="ag-card ag-wide" id="ag-complaints">
+          <div class="ag-header">
+            <span class="ag-icon">📝</span>
+            <div>
+              <div class="ag-title">Citizen Complaint Analysis Agent</div>
+              <div class="ag-subtitle">Submits and analyzes citizen pollution complaints correlated with live sensor data</div>
+            </div>
+          </div>
+          <div class="ag-controls complaint-controls">
+            <div class="complaint-form">
+              <div class="cf-row">
+                <div class="form-group">
+                  <label>Complaint Type</label>
+                  <select id="complaint-type">
+                    <option value="odor">Foul Odor / Gas Smell</option>
+                    <option value="dust">Dust / Particulate Matter</option>
+                    <option value="water">Water Contamination</option>
+                    <option value="smoke">Smoke / Black Smoke</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+              <div class="cf-row">
+                <div class="form-group" style="flex:1">
+                  <label>Describe the Complaint</label>
+                  <textarea id="complaint-text" rows="3" placeholder="e.g. Strong chemical smell near the river, affecting breathing since morning…"></textarea>
+                </div>
+              </div>
+              <button class="btn-agent" onclick="submitComplaint()">Submit &amp; Analyze Complaint</button>
+              <button class="btn-agent btn-secondary" onclick="loadComplaints()" style="margin-left:0.5rem">View All Complaints</button>
+            </div>
+          </div>
+          <div class="ag-result hidden" id="result-complaints"></div>
+          <div class="ag-result hidden" id="complaints-list-panel"></div>
+        </div>
+
+        <!-- 6. Environmental Risk Scoring -->
+        <div class="ag-card" id="ag-risk-scoring">
+          <div class="ag-header">
+            <span class="ag-icon">⚖️</span>
+            <div>
+              <div class="ag-title">Environmental Risk Scoring Agent</div>
+              <div class="ag-subtitle">Computes composite Environmental Risk Index (ERI) across all dimensions</div>
+            </div>
+          </div>
+          <div class="ag-controls">
+            <button class="btn-agent" onclick="runAgent('risk-scoring')">Compute Risk Score</button>
+          </div>
+          <div class="ag-result hidden" id="result-risk-scoring"></div>
+        </div>
+
+      </div><!-- end agent-cards-grid -->
+    </section>
+
+
+
+    <!-- ── ENVIRONMENTAL DASHBOARD TAB ── -->
+    <section id="tab-env-dashboard" class="tab-section">
+      <div class="section-title">🌍 Environmental Dashboard — Cross-Location Overview</div>
+
+      <div class="envdash-controls">
+        <div class="location-selector">
+          <label>Scope:</label>
+          <select id="envdash-location">
+            <option value="all">All Locations (Golden Corridor)</option>
+            <option value="Vapi">Vapi</option>
+            <option value="Ankleshwar">Ankleshwar</option>
+            <option value="Vatva">Vatva</option>
+          </select>
+        </div>
+        <button class="btn-agent" onclick="runEnvDashboard()">🔄 Generate Dashboard Report</button>
+      </div>
+
+      <!-- Location Snapshot Cards -->
+      <div class="envdash-cards" id="envdash-cards"></div>
+
+      <!-- AI Summary -->
+      <div id="envdash-ai-panel" class="envdash-ai-panel hidden">
+        <div class="envdash-ai-header">
+          <span>🤖 IBM Granite LLM — Environmental Dashboard Report</span>
+          <span class="ai-status-badge" id="envdash-worst-badge"></span>
+        </div>
+        <div class="envdash-ai-body" id="envdash-ai-body"></div>
+      </div>
+    </section>
+
+    <!-- ── AI ASSISTANT TAB ── -->
+    <section id="tab-assistant" class="tab-section">
+      <div class="section-title">💬 Environmental AI Assistant — Multilingual Support</div>
+
+      <div class="assistant-layout">
+        <!-- Left: Chat -->
+        <div class="chat-panel">
+          <div class="chat-header">
+            <div class="chat-header-left">
+              <span class="chat-avatar">🤖</span>
+              <div>
+                <div class="chat-title" id="chat-title">Environmental AI Assistant</div>
+                <div class="chat-subtitle" id="chat-subtitle">Ask me anything about pollution, health risks, or remedies</div>
+              </div>
+            </div>
+            <div class="chat-controls">
+              <label class="chat-ctrl-label">Language:</label>
+              <select id="chat-language" onchange="onChatLangChange()">
+                <option value="english">🇬🇧 English</option>
+                <option value="hindi">🇮🇳 हिंदी</option>
+                <option value="gujarati">🏵️ ગુજરાતી</option>
+              </select>
+              <label class="chat-ctrl-label">Location:</label>
+              <select id="chat-location">
+                <option value="Vapi">Vapi</option>
+                <option value="Ankleshwar">Ankleshwar</option>
+                <option value="Vatva">Vatva</option>
+              </select>
+              <button class="chat-clear-btn" onclick="clearChat()" title="Clear Chat">🗑️</button>
+            </div>
+          </div>
+
+          <!-- Messages -->
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-msg assistant">
+              <div class="msg-avatar">🤖</div>
+              <div class="msg-bubble">
+                <div class="msg-text" id="welcome-msg">Hello! I'm your Environmental AI Assistant for the Golden Corridor (Vapi, Ankleshwar, Vatva). I can help you with pollution levels, health advisories, remedies, and regulatory guidance. How can I help you today?</div>
+                <div class="msg-time">Now</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input -->
+          <div class="chat-input-bar">
+            <div class="chat-input-wrap">
+              <textarea id="chat-input" rows="2" placeholder="Type your question here… (English / हिंदी / ગુજરાતી)" onkeydown="handleChatKey(event)"></textarea>
+              <button class="chat-send-btn" id="chat-send-btn" onclick="sendChatMessage()">
+                <span id="chat-send-icon">➤</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Quick Prompts & Context -->
+        <div class="chat-sidebar">
+          <div class="qs-title" id="qs-title">💡 Quick Questions</div>
+          <div id="quick-prompts" class="quick-prompts"></div>
+
+          <div class="qs-title" style="margin-top:1.25rem" id="ctx-title">📡 Live Context</div>
+          <div class="chat-context" id="chat-context-box">
+            <div class="loading"><span class="spinner"></span>Loading sensor data…</div>
+          </div>
+
+          <div class="qs-title" style="margin-top:1.25rem">⚡ Features</div>
+          <ul class="feature-list">
+            <li>🗣️ Multilingual (English / हिंदी / ગુજરાતી)</li>
+            <li>📡 Live sensor data context</li>
+            <li>💊 Instant remedy suggestions</li>
+            <li>🏥 Health risk advisories</li>
+            <li>⚖️ GPCB compliance guidance</li>
+            <li>🏭 Source identification help</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+
+    <section id="tab-architecture" class="tab-section">
+      <div class="section-title">🏗️ System Architecture</div>
+      <div class="arch-diagram">
+        <div class="arch-row">
+          <div class="arch-node sensor">
+            <div class="arch-icon">📡</div>
+            <div>IoT Sensors</div>
+            <div class="arch-sub">Air + Water<br/>Parameters</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node gateway">
+            <div class="arch-icon">🌐</div>
+            <div>IoT Gateway</div>
+            <div class="arch-sub">Edge Processing<br/>Data Collection</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node cloud">
+            <div class="arch-icon">☁️</div>
+            <div>IBM Cloud</div>
+            <div class="arch-sub">Watsonx.AI<br/>Infrastructure</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node db">
+            <div class="arch-icon">🗄️</div>
+            <div>Database</div>
+            <div class="arch-sub">Time-series<br/>Historical Data</div>
+          </div>
+        </div>
+        <div class="arch-row" style="margin-top:1.5rem">
+          <div class="arch-node processing">
+            <div class="arch-icon">⚙️</div>
+            <div>Data Processing</div>
+            <div class="arch-sub">Flask API<br/>Python Backend</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node ai">
+            <div class="arch-icon">🤖</div>
+            <div>AI / Analytics</div>
+            <div class="arch-sub">IBM Granite LLM<br/>Agentic AI</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node dashboard">
+            <div class="arch-icon">📊</div>
+            <div>Dashboard</div>
+            <div class="arch-sub">React-like SPA<br/>Chart.js</div>
+          </div>
+          <div class="arch-arrow">→</div>
+          <div class="arch-node alerts">
+            <div class="arch-icon">🔔</div>
+            <div>Alerts</div>
+            <div class="arch-sub">Real-time<br/>Notifications</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-stack">
+        <div class="section-title">🛠️ Technology Stack</div>
+        <div class="tech-grid">
+          <div class="tech-item"><span class="tech-icon">🐍</span><b>Python 3.x</b><br/>Flask Backend</div>
+          <div class="tech-item"><span class="tech-icon">🤖</span><b>IBM Granite LLM</b><br/>Watsonx.AI</div>
+          <div class="tech-item"><span class="tech-icon">☁️</span><b>IBM Cloud</b><br/>Watsonx Platform</div>
+          <div class="tech-item"><span class="tech-icon">📊</span><b>Chart.js</b><br/>Data Visualization</div>
+          <div class="tech-item"><span class="tech-icon">🌐</span><b>REST API</b><br/>Flask + CORS</div>
+          <div class="tech-item"><span class="tech-icon">📡</span><b>IoT Simulation</b><br/>Sensor Data Engine</div>
+          <div class="tech-item"><span class="tech-icon">⚡</span><b>Real-time</b><br/>Live Data (5s interval)</div>
+          <div class="tech-item"><span class="tech-icon">🏭</span><b>Golden Corridor</b><br/>Vapi·Ankleshwar·Vatva</div>
+        </div>
+      </div>
+
+      <div class="agents-detail">
+        <div class="section-title">🤖 AI Agents</div>
+        <div class="agent-detail-grid">
+          <div class="agent-detail-card">
+            <div class="ad-header">📡 Emission &amp; Effluent Monitoring Agent</div>
+            <p>Continuously collects data from IoT sensors deployed across all three industrial zones. Monitors 8 air parameters (PM2.5, PM10, SO2, NO2, CO, O3, VOC, H2S) and 8 water parameters (pH, BOD, COD, TDS, Turbidity, DO, Nitrates, Heavy Metals) in real-time every 5 seconds.</p>
+          </div>
+          <div class="agent-detail-card">
+            <div class="ad-header">⚖️ Violation Detection &amp; Compliance Agent</div>
+            <p>Compares measured values against CPCB/GPCB regulatory thresholds. Automatically classifies each parameter as Good / Moderate / Bad. Calculates AQI and WQI composite scores. Flags violations instantly.</p>
+          </div>
+          <div class="agent-detail-card">
+            <div class="ad-header">📢 Regulatory Alert &amp; Escalation Agent</div>
+            <p>Generates prioritized alerts based on severity. Triggers escalation protocols for critical violations. Notifies regulatory authorities (GPCB) automatically. Maintains audit trail of all alerts for legal compliance.</p>
+          </div>
+          <div class="agent-detail-card">
+            <div class="ad-header">🏥 Public Health Risk Assessment Agent</div>
+            <p>Evaluates combined pollution exposure risk for nearby communities. Uses IBM Granite LLM to generate contextual health advisories. Provides evacuation recommendations for critical scenarios.</p>
+          </div>
+          <div class="agent-detail-card">
+            <div class="ad-header">📊 Industrial Pollution Dashboard Agent</div>
+            <p>Aggregates and visualizes all sensor data in real-time. Generates trend charts, status summaries, and comparative analytics across Vapi, Ankleshwar, and Vatva. Powers the unified monitoring dashboard.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <script src="static/js/app.js"></script>
+</body>
+</html>
